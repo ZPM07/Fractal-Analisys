@@ -1,0 +1,35 @@
+services:
+  lacunarity-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: lacunarity-api
+    ports:
+      - "${API_PORT:-8000}:${API_PORT:-8000}"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - API_PORT=${API_PORT:-8000}
+      - API_HOST=${API_HOST:-0.0.0.0}
+      - API_WORKERS=${API_WORKERS:-1}
+      - API_TITLE=${API_TITLE:-Lacunarity Analysis API}
+      - API_VERSION=${API_VERSION:-1.0.0}
+      - MAX_CONCURRENT_CALCULATIONS=${MAX_CONCURRENT_CALCULATIONS:-3}
+      - LOGGING_LEVEL=${LOGGING_LEVEL:-INFO}
+    volumes:
+      - ./:/app:rw
+      - /app/build
+      - /app/TDA.egg-info
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${API_PORT:-8000}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - lacunarity-network
+
+networks:
+  lacunarity-network:
+    driver: bridge
+
